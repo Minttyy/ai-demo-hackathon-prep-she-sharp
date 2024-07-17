@@ -1,17 +1,29 @@
-from flask import Flask, render_template, request
+
+# Imports go here
 from openai import AzureOpenAI
+import os
+from dotenv import load_dotenv, dotenv_values
 from azure.search.documents import SearchClient
 from azure.core.credentials import AzureKeyCredential
-
-import os
-from dotenv import load_dotenv
+from flask import Flask, request, render_template,redirect,url_for
 
 load_dotenv()
+
+STOP_WORDS = set([
+    "a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "if", "in", 
+    "into", "is", "it", "no", "not", "of", "on", "or", "such", "that", "the", 
+    "their", "then", "there", "these", "they", "this", "to", "was", "will", "with"
+    ])
 
 # Put the keys and endpoints here (never put your real keys in the code)
 AOAI_ENDPOINT = os.getenv('AOAI_ENDPOINT')
 AOAI_KEY = os.getenv('AOAI_KEY')
 MODEL_NAME = "shesharp-fp-hack-gpt35-turbo-16k"
+
+# Search keys and endpoints
+SEARCH_ENDPOINT = AOAI_ENDPOINT
+SEARCH_KEY = AOAI_KEY
+AZURE_SEARCH_INDEX = 'margiestraveldocs'
 
 # Set up the client for AI Chat using the contstants and API Version
 client = AzureOpenAI(
@@ -20,26 +32,36 @@ client = AzureOpenAI(
     api_version="2024-05-01-preview",
 )
 
+# for search client
+search_client = SearchClient(
+    endpoint=SEARCH_ENDPOINT,
+    credential=AzureKeyCredential(SEARCH_KEY),
+    index_name=AZURE_SEARCH_INDEX,
+)
+
 # Set the tone of the conversation
-SYSTEM_MESSAGE = "You are a helpful AI assistant that can answer questions and provide information. You can also provide sources for your information."
+SYSTEM_MESSAGE = "You are a helpful AI assistant that can answer questions and provide information. You must use the provided sources for your information."
 
-
-# What question do you want to ask?
-question = "What is the main animal in N?"
-
-# AI
+# Function
 def get_response(question,message_history=[]):
-   # Create the message history
-  messages=[
-      {"role": "system", "content": SYSTEM_MESSAGE},
-      {"role": "user", "content": question},
-  ]
+    search_results = search_client.search(search_text=question)
+    search_summary = " ".join(result["content"] for result in search_results)
+    
+    # Create a new message history if there isn't one
+    if not message_history:
+        messages=[
+            {"role": "system", "content": SYSTEM_MESSAGE},
+            {"role": "user", "content": question + "\nSources: " + search_summary},
+        ]
+    # Otherwise, append the user's question to the message history
+    else:
+        messages = message_history + [
+            {"role": "user", "content": question + "\nSources: " + search_summary},
+        ]
 
-  # Get the answer using the GPT model (create 1 answer (n) and use a temperature of 0.7 to set it to be pretty creative/random)
-  response = client.chat.completions.create(model=MODEL_NAME,temperature=0.7,n=1,messages=messages)
-  answer = response.choices[0].message.content
-
-  return answer, message_history +[{"role":"user","content":question}]
+    response = client.chat.completions.create(model=MODEL_NAME,temperature=0.7,n=1,messages=messages)
+    answer = response.choices[0].message.content
+    return answer, message_history
 
 ############################################
 ######## THIS IS THE WEB APP CODE  #########
@@ -57,32 +79,51 @@ app = Flask(
 @app.get('/')
 def index():
   # Return a page that links to these three pages /test-ai, /ask, /chat
-  return """<a href="/test-ai">Test AI</a> <br> 
-            <a href="/ask">Ask</a> <br> 
-            <a href="/chat">Chat</a>"""
+  return redirect(url_for('chat'))
 
 # Put the extra routes here
 # This is the route that shows the form the user asks a question on
-@app.get('/test-ai')
-def test_ai():
-  # Very basic form that sends a question to the /contextless-message endpoint
-  return """
-  <h1>Ask a question!</h1>
-  <form method="post" action="/test-ai">
-      <textarea name="question" placeholder="Ask a question"></textarea>
-      <button type="submit">Ask</button>
-  </form>
-  """
+# @app.get('/test-ai')
+# def test_ai():
+#   # Very basic form that sends a question to the /contextless-message endpoint
+#   return """
+#   <h1>Ask a question!</h1>
+#   <form method="post" action="/test-ai">
+#       <textarea name="question" placeholder="Ask a question"></textarea>
+#       <button type="submit">Ask</button>
+#   </form>
+#   """
 
-# This is the route that the form sends the question to and sends back the response
-@app.route("/test-ai", methods=["POST"])
-def ask_response():
-  # Get the question from the form
-  question = request.form.get("question")
+# # This is the route that the form sends the question to and sends back the response
+# @app.route("/test-ai", methods=["POST"])
+# def ask_response():
+#   # Get the question from the form
+#   question = request.form.get("question")
 
-  # Return the response from the AI
-  return get_response(question)
+#   # Return the response from the AI
+#   return get_response(question)
 
+@app.get('/ask')
+def ask():
+    return render_template("ask.html")
+
+@app.route('/contextless-message', methods=['GET', 'POST'])
+def contextless_message():
+    question = request.json['message']
+    resp = get_response(question)
+    return {"resp": resp[0]}
+
+@app.get('/chat')
+def chat():
+    return render_template('chat.html')
+
+@app.route("/context-message", methods=["GET", "POST"])
+def context_message():
+    question = request.json["message"]
+    context = request.json["context"]
+
+    resp, context = get_response(question, context)
+    return {"resp": resp, "context": context}
 
 # This is for when there is not a matching route. 
 @app.errorhandler(404)
