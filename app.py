@@ -20,6 +20,38 @@ AOAI_ENDPOINT = os.getenv('AOAI_ENDPOINT')
 AOAI_KEY = os.getenv('AOAI_KEY')
 MODEL_NAME = "shesharp-fp-hack-gpt35-turbo-16k"
 
+# Define background information for each persona
+common_issues = {
+    "junior-marketer": [
+        "Difficulty in measuring return on investment (ROI).",
+        "Challenges in understanding and targeting the right audience.",
+        "Difficulty in creating engaging content.",
+        "Managing and analyzing data.",
+        "Keeping up with marketing trends."
+    ],
+    "senior-marketer": [
+        "Managing large marketing teams and budgets.",
+        "Navigating complex market dynamics.",
+        "Ensuring alignment with business goals.",
+        "Optimizing marketing strategies.",
+        "Handling high-level client relationships."
+    ],
+    "junior-engineer": [
+        "Understanding and applying advanced technologies.",
+        "Debugging and troubleshooting code.",
+        "Limited experience in project management.",
+        "Adapting to new development tools.",
+        "Collaborating effectively with team members."
+    ],
+    "senior-engineer": [
+        "Leading and mentoring junior engineers.",
+        "Managing complex technical projects.",
+        "Staying updated with evolving technologies.",
+        "Ensuring code quality and standards.",
+        "Balancing technical and managerial responsibilities."
+    ]
+}
+
 # Search keys and endpoints
 SEARCH_ENDPOINT = AOAI_ENDPOINT
 SEARCH_KEY = AOAI_KEY
@@ -43,25 +75,53 @@ search_client = SearchClient(
 SYSTEM_MESSAGE = "You are a helpful AI assistant that can answer questions and provide information. You must use the provided sources for your information."
 
 # Function
-def get_response(question,message_history=[]):
-    search_results = search_client.search(search_text=question)
-    search_summary = " ".join(result["content"] for result in search_results)
+# def get_response(question,message_history=[]):
+#     search_results = search_client.search(search_text=question)
+#     search_summary = " ".join(result["content"] for result in search_results)
     
-    # Create a new message history if there isn't one
-    if not message_history:
-        messages=[
-            {"role": "system", "content": SYSTEM_MESSAGE},
-            {"role": "user", "content": question + "\nSources: " + search_summary},
-        ]
-    # Otherwise, append the user's question to the message history
-    else:
-        messages = message_history + [
-            {"role": "user", "content": question + "\nSources: " + search_summary},
-        ]
+#     # Create a new message history if there isn't one
+#     if not message_history:
+#         messages=[
+#             {"role": "system", "content": SYSTEM_MESSAGE},
+#             {"role": "user", "content": question + "\nSources: " + search_summary},
+#         ]
+#     # Otherwise, append the user's question to the message history
+#     else:
+#         messages = message_history + [
+#             {"role": "user", "content": question + "\nSources: " + search_summary},
+#         ]
 
-    response = client.chat.completions.create(model=MODEL_NAME,temperature=0.7,n=1,messages=messages)
-    answer = response.choices[0].message.content
-    return answer, message_history
+#     response = client.chat.completions.create(model=MODEL_NAME,temperature=0.7,n=1,messages=messages)
+#     answer = response.choices[0].message.content
+#     return answer, message_history
+
+
+#HOKITIKA
+# def get_ai_suggestions(persona):
+#     # Get the background information for the selected persona
+#     issues = common_issues.get(persona, [])
+#     # Create the prompt for a chat-based model
+#     prompt = (
+#         f"Given the following common issues for a {persona.replace('-', ' ')}:\n"
+#         f"{', '.join(issues)}\n\n"
+#         f"Please select the most relevant issues from this list."
+#     )
+    
+#     # Use the client to generate a response with chat completions
+#     response = client.completions.create(
+#         model=MODEL_NAME,
+#         prompt=prompt,
+#         max_tokens=150,
+#         temperature=0.5  # Adjust the temperature for more controlled responses
+#     )
+    
+#     # Extract the selected issues from the response
+#     selected_issues = response.choices[0].text.strip()
+    
+#     # Split the response into a list
+#     selected_issues_list = selected_issues.split('\n')
+    
+#     return selected_issues_list
 
 ############################################
 ######## THIS IS THE WEB APP CODE  #########
@@ -81,31 +141,24 @@ def index():
   # Return a page that links to these three pages /test-ai, /ask, /chat
   return redirect(url_for('chat'))
 
-# Put the extra routes here
-# This is the route that shows the form the user asks a question on
-# @app.get('/test-ai')
-# def test_ai():
-#   # Very basic form that sends a question to the /contextless-message endpoint
-#   return """
-#   <h1>Ask a question!</h1>
-#   <form method="post" action="/test-ai">
-#       <textarea name="question" placeholder="Ask a question"></textarea>
-#       <button type="submit">Ask</button>
-#   </form>
-#   """
-
-# # This is the route that the form sends the question to and sends back the response
-# @app.route("/test-ai", methods=["POST"])
-# def ask_response():
-#   # Get the question from the form
-#   question = request.form.get("question")
-
-#   # Return the response from the AI
-#   return get_response(question)
-
 @app.get('/ask')
 def ask():
     return render_template("ask.html")
+
+@app.get('/persona')
+def persona():
+    return render_template("persona.html")
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    chosenPersona = request.form['chosenPersona']
+    return redirect(url_for('result', chosenPersona=chosenPersona))
+
+@app.route('/result')
+def result():
+    chosenPersona = request.args.get('chosenPersona')
+    issues = common_issues.get(chosenPersona, [])
+    return render_template('result.html', issues=issues, chosenPersona=chosenPersona)
 
 @app.route('/contextless-message', methods=['GET', 'POST'])
 def contextless_message():

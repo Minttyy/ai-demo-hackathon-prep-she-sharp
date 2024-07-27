@@ -4,27 +4,42 @@
 	<link href="/static/styles.css" rel="stylesheet" type="text/css">
 </head>
 <body>
-    <div id="content">
+    <!-- <div id="content">
         <form action="" method="post" id="ask-form">
             <input type="text" name="question" id="question" placeholder="Enter your question?" required />
             <input type="button" value="Send" id="ask-send"/>
         </form>
 
         <div id="ask-output" class="output"></div>
-    </div>
+    </div> -->
 
+    <div class="container">
+        <h2>Hokitika</h2>
+        <form action="{{ url_for('submit') }}"method="post" id="persona-form">
+          <label for="chosenPersona">Who am I talking to?</label>
+          <select id="chosenPersona" name="chosenPersona" required>
+            <option value="" disabled selected>Select a persona</option>
+            <option value="junior-marketer">Junior Marketer</option>
+            <option value="senior-marketer">Senior Marketer</option>
+            <option value="junior-engineer">Junior Engineer</option>
+            <option value="senior-engineer">Senior Engineer</option>
+          </select>
+    
+          <input type="submit" value="Submit" id="chosenPersona">
+        </form>
+      </div>
     
 </body>
-
+<!-- 
 <script>
-    askSend = document.getElementById("ask-send");
-    askForm = document.getElementById("ask-form");
+    personaSend = document.getElementById("persona-send");
+    personaForm = document.getElementById("persona-form");
     output = document.getElementById("ask-output");
-    askForm.onsubmit = (e) => {
+    personaForm.onsubmit = (e) => {
         e.preventDefault()
         send_message(e.target)
     }
-    askSend.onclick = (e) => {
+    personaSend.onclick = (e) => {
         e.preventDefault()
         send_message(e.target.form)
     }
@@ -56,4 +71,5 @@
         });
     }
 
-</script>
+</script> -->
+
