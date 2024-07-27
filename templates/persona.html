@@ -1,75 +1,114 @@
 <!doctype html>
+<html lang="en">
 <head>
-	<title>AI RAG Workshop - Ask</title>
-	<link href="/static/styles.css" rel="stylesheet" type="text/css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI RAG Workshop - Ask</title>
+    <link href="/static/styles.css" rel="stylesheet" type="text/css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4; /* Light background for contrast */
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #083464; /* Primary color */
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        select, input[type="submit"] {
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        select {
+            flex-grow: 1;
+        }
+
+        input[type="submit"] {
+            background-color: #083464; /* Primary color */
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #062d49; /* Darker shade of primary color */
+        }
+
+        .output {
+            margin-top: 20px;
+        }
+
+        .message {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            background-color: #e1eaf7; /* Light shade of primary color */
+            color: #333;
+        }
+
+        .message.error {
+            background-color: #d32f2f;
+            color: white;
+        }
+
+        .message.success {
+            background-color: #388e3c;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-    <!-- <div id="content">
-        <form action="" method="post" id="ask-form">
-            <input type="text" name="question" id="question" placeholder="Enter your question?" required />
-            <input type="button" value="Send" id="ask-send"/>
-        </form>
-
-        <div id="ask-output" class="output"></div>
-    </div> -->
-
     <div class="container">
         <h2>Hokitika</h2>
-        <form action="{{ url_for('submit') }}"method="post" id="persona-form">
-          <label for="chosenPersona">Who am I talking to?</label>
-          <select id="chosenPersona" name="chosenPersona" required>
-            <option value="" disabled selected>Select a persona</option>
-            <option value="junior-marketer">Junior Marketer</option>
-            <option value="senior-marketer">Senior Marketer</option>
-            <option value="junior-engineer">Junior Engineer</option>
-            <option value="senior-engineer">Senior Engineer</option>
-          </select>
-    
-          <input type="submit" value="Submit" id="chosenPersona">
+        <form action="{{ url_for('submit') }}" method="post" id="persona-form">
+            <label for="chosenPersona">Who am I talking to?</label>
+            <select id="chosenPersona" name="chosenPersona" required>
+                <option value="" disabled selected>Select a persona</option>
+                <option value="junior-marketer">Junior Marketer</option>
+                <option value="senior-marketer">Senior Marketer</option>
+                <option value="junior-engineer">Junior Engineer</option>
+                <option value="senior-engineer">Senior Engineer</option>
+            </select>
+            <input type="submit" value="Submit">
         </form>
-      </div>
-    
-</body>
-<!-- 
-<script>
-    personaSend = document.getElementById("persona-send");
-    personaForm = document.getElementById("persona-form");
-    output = document.getElementById("ask-output");
-    personaForm.onsubmit = (e) => {
-        e.preventDefault()
-        send_message(e.target)
-    }
-    personaSend.onclick = (e) => {
-        e.preventDefault()
-        send_message(e.target.form)
-    }
-    function send_message(f) {
-        msg = f[0].value
-        const data = {
-            message: msg
-        };
-        f[0].value = ""
+        <!-- This will be populated dynamically if needed -->
+        <div id="ask-output" class="output"></div>
+    </div>
+    <footer>
+        She# and FPH Hackathon event DEMO
+    </footer>
 
-        output.innerHTML = "<div class=message>Waiting...</div>"
-
-        // Send the POST request using fetch
-        fetch("/contextless-message", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            console.log("Success:", data)
-            output.innerHTML = "<div class=message>" + data.resp + "</div>"
-        })
-        .catch((error) => {
-            console.error("Error:", error)
-            output.value = "<div class=message>Sorry, there was an error. Please refresh and try again.</div>"
-        });
-    }
-
-</script> -->
-
+    <script>
+        // JavaScript for handling form submission and other dynamic content
+        document.getElementById('persona-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting the traditional way
+            // Handle form submiss

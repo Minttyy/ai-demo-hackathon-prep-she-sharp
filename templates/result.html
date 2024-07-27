@@ -3,8 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/static/styles.css" rel="stylesheet" type="text/css">
     <title>Result Page</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4; /* Light background for contrast */
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h2 {
+            color: #083464; /* Primary color */
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
         .button {
             display: inline-block;
             padding: 10px 20px;
@@ -12,23 +38,79 @@
             font-size: 16px;
             text-align: center;
             cursor: pointer;
-            color: #fff;
-            background-color: #007bff;
+            color: #fff; /* Ensure text is white */
+            background-color: #083464; /* Primary color */
             border: none;
             border-radius: 5px;
             text-decoration: none;
+            transition: background-color 0.3s ease;
         }
+
         .button:hover {
-            background-color: #0056b3;
+            background-color: #062d49; /* Darker shade of primary color */
+        }
+
+        .button.large {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            background-color: #ff5722; /* Make it stand out */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .button.large:hover {
+            background-color: #e64a19; /* Darker shade of button color */
+        }
+
+        .message {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            background-color: #e1eaf7; /* Light shade of primary color */
+            color: #333;
+        }
+
+        .message.question {
+            background-color: #c9daf8; /* Slightly lighter for questions */
+        }
+
+        .message.response {
+            background-color: #d0e9ff; /* Slightly lighter for responses */
+        }
+
+        .message.response.error {
+            background-color: #f44336; /* Error color */
+            color: white;
+        }
+
+        footer {
+            background-color: #083464; /* Primary color */
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            left: 0;
         }
     </style>
 </head>
 <body>
-    <h2>Issues for {{chosenPersona}}</h2>
-    <div>
-        {% for issue in issues %}
-            <a href="#" class="button">{{ issue }}</a>
-        {% endfor %}
+    <div class="container">
+        <h2>Issues for {{ chosenPersona }}</h2>
+        <div>
+            {% for issue in issues %}
+                <a href="#" class="button">{{ issue }}</a>
+            {% endfor %}
+        </div>
+        <div>
+            <a href="{{ url_for('chat') }}" class="button large">None of the Above</a>
+        </div>
     </div>
+    <footer>
+        She# and FPH Hackathon event DEMO
+    </footer>
 </body>
 </html>

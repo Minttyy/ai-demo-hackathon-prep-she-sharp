@@ -75,25 +75,25 @@ search_client = SearchClient(
 SYSTEM_MESSAGE = "You are a helpful AI assistant that can answer questions and provide information. You must use the provided sources for your information."
 
 # Function
-# def get_response(question,message_history=[]):
-#     search_results = search_client.search(search_text=question)
-#     search_summary = " ".join(result["content"] for result in search_results)
+def get_response(question,message_history=[]):
+    search_results = search_client.search(search_text=question)
+    search_summary = " ".join(result["content"] for result in search_results)
     
-#     # Create a new message history if there isn't one
-#     if not message_history:
-#         messages=[
-#             {"role": "system", "content": SYSTEM_MESSAGE},
-#             {"role": "user", "content": question + "\nSources: " + search_summary},
-#         ]
-#     # Otherwise, append the user's question to the message history
-#     else:
-#         messages = message_history + [
-#             {"role": "user", "content": question + "\nSources: " + search_summary},
-#         ]
+    # Create a new message history if there isn't one
+    if not message_history:
+        messages=[
+            {"role": "system", "content": SYSTEM_MESSAGE},
+            {"role": "user", "content": question + "\nSources: " + search_summary},
+        ]
+    # Otherwise, append the user's question to the message history
+    else:
+        messages = message_history + [
+            {"role": "user", "content": question + "\nSources: " + search_summary},
+        ]
 
-#     response = client.chat.completions.create(model=MODEL_NAME,temperature=0.7,n=1,messages=messages)
-#     answer = response.choices[0].message.content
-#     return answer, message_history
+    response = client.chat.completions.create(model=MODEL_NAME,temperature=0.7,n=1,messages=messages)
+    answer = response.choices[0].message.content
+    return answer, message_history
 
 
 #HOKITIKA
@@ -139,7 +139,7 @@ app = Flask(
 @app.get('/')
 def index():
   # Return a page that links to these three pages /test-ai, /ask, /chat
-  return redirect(url_for('chat'))
+  return redirect(url_for('persona'))
 
 @app.get('/ask')
 def ask():

@@ -1,7 +1,96 @@
 <!doctype html>
+<html lang="en">
 <head>
-	<title>AI RAG Workshop - Chat</title>
-	<link href="/static/styles.css" rel="stylesheet" type="text/css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI RAG Workshop - Chat</title>
+    <link href="/static/styles.css" rel="stylesheet" type="text/css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4; /* Light background for contrast */
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        #content {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #chat-output {
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #e1eaf7; /* Light shade of primary color */
+        }
+
+        .entry-form {
+            display: flex;
+            justify-content: center;
+        }
+
+        form {
+            width: 100%;
+            display: flex;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        input[type="button"] {
+            padding: 10px 20px;
+            margin-left: 10px;
+            font-size: 16px;
+            background-color: #083464; /* Primary color */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        input[type="button"]:hover {
+            background-color: #062d49; /* Darker shade of primary color */
+        }
+
+        .message {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .message.question {
+            background-color: #c9daf8; /* Slightly lighter for questions */
+            color: #333;
+        }
+
+        .message.response {
+            background-color: #d0e9ff; /* Slightly lighter for responses */
+            color: #333;
+        }
+
+        .message.response.error {
+            background-color: #f44336; /* Error color */
+            color: white;
+        }
+
+    </style>
 </head>
 <body>
     <div id="content">
@@ -14,49 +103,60 @@
             </form>
         </div>
     </div>
-</body>
+    <footer>
+        She# and FPH Hackathon event DEMO
+    </footer>
 
-<script>
-    chatSend = document.getElementById("chat-send");
-    output = document.getElementById("chat-output");
-    chatForm = document.getElementById("chat-form");
-    current_context = [];
-    chatForm.onsubmit = (e) => {
-        e.preventDefault()
-        send_message(e.target)
-    }
-    chatSend.onclick = (e) => {
-        e.preventDefault()
-        send_message(e.target.form)
-    }
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatForm = document.getElementById("chat-form");
+            const chatSend = document.getElementById("chat-send");
+            const output = document.getElementById("chat-output");
+            const current_context = [];
 
-    function send_message(f) {
-        msg = f[0].value
-        const data = {
-            message: msg,
-            context: current_context
-        };
-        f[0].value = ""
+            if (chatForm) {
+                chatForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    send_message(e.target);
+                });
+            }
 
-        output.innerHTML += "<div class='message question'>" + msg + "</div>"
+            if (chatSend) {
+                chatSend.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    send_message(e.target.form);
+                });
+            }
 
-        // Send the POST request using fetch
-        fetch("/context-message", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            console.log("Success:", data)
-            output.innerHTML += "<div class='message response'>" + data.resp + "</div>"
-        })
-        .catch((error) => {
-            console.error("Error:", error)
-            output.innerHTML += "<div class='message response error'>Sorry, there was an error. Please refresh and try again.</div>"
+            function send_message(form) {
+                const msg = form[0].value;
+                const data = {
+                    message: msg,
+                    context: current_context
+                };
+                form[0].value = "";
+
+                output.innerHTML += "<div class='message question'>" + msg + "</div>";
+
+                // Send the POST request using fetch
+                fetch("/context-message", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log("Success:", data);
+                    output.innerHTML += "<div class='message response'>" + data.resp + "</div>";
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                    output.innerHTML += "<div class='message response error'>Sorry, there was an error. Please refresh and try again.</div>";
+                });
+            }
         });
-    }
-
-</script>
+    </script>
+</body>
+</html>
